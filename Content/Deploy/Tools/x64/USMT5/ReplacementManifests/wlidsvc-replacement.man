@@ -1,0 +1,108 @@
+﻿<?xml version='1.0' encoding='utf-8' standalone='yes'?>
+<assembly
+    xmlns="urn:schemas-microsoft-com:asm.v3"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    manifestVersion="1.0"
+    >
+  <!-- "Replacement manifest" used to replace our Win8 and newer manifests
+       to handle gathering settings on these OSes. -->
+  <assemblyIdentity
+      language="neutral"
+      name="Windows-ID-Connected-Account-Provider-WLIDSvc"
+      processorArchitecture="*"
+      version="0.0.0.0"
+      />
+  <migration
+      critical="Yes"
+      replacementSettingsVersionRange="0"
+      replacementVersionRange="6.2-10"
+      scope="Upgrade,MigWiz,USMT,Data"
+      settingsVersion="1"
+      >
+    <migXml xmlns="">
+      <rules context="user">
+        <!-- These user-context rules apply only in upgrades (not WET, USMT, or Data) -->
+        <detects>
+          <detect>
+            <condition>MigXmlHelper.IsUpgrade()</condition>
+          </detect>
+        </detects>
+        <!-- Gather entire IdentityCRL key for all users except System (excluded below) -->
+        <include>
+          <objectSet>
+            <pattern type="Registry">HKCU\Software\Microsoft\IdentityCRL\* [*]</pattern>
+          </objectSet>
+        </include>
+        <!-- Do not gather InterruptState subkey -->
+        <exclude>
+          <objectSet>
+            <pattern type="Registry">HKCU\Software\Microsoft\IdentityCRL\InterruptState\* [*]</pattern>
+          </objectSet>
+        </exclude>
+      </rules>
+      <rules context="system">
+        <!-- These system-context rules apply only in upgrades (not WET, USMT, or Data) -->
+        <detects>
+          <detect>
+            <condition>MigXmlHelper.IsUpgrade()</condition>
+          </detect>
+        </detects>
+        <!-- Default for system user node and HKLM is "don't gather", certain things excepted below -->
+        <exclude>
+          <objectSet>
+            <pattern type="Registry">HKU\.DEFAULT\Software\Microsoft\IdentityCRL\* [*]</pattern>
+            <pattern type="Registry">HKLM\Software\Microsoft\IdentityCRL\* [*]</pattern>
+            <pattern type="Registry">HKLM\Software\Wow6432Node\Microsoft\IdentityCRL\* [*]</pattern>
+          </objectSet>
+        </exclude>
+        <!-- Specific things to gather from system user node -->
+        <include>
+          <objectSet>
+            <pattern type="Registry">HKU\.DEFAULT\Software\Microsoft\IdentityCRL\DeviceIdentities\* [*]</pattern>
+            <pattern type="Registry">HKU\.DEFAULT\Software\Microsoft\IdentityCRL\ExtendedProperties\* [*]</pattern>
+            <!-- StoredIdentities gathered on Win8 and above, but not Win7 or below, since linking association was stored there before Win8 -->
+            <pattern type="Registry">HKU\.DEFAULT\Software\Microsoft\IdentityCRL\StoredIdentities\* [*]</pattern>
+            <pattern type="Registry">HKU\.DEFAULT\Software\Microsoft\IdentityCRL\CredManLog\* [*]</pattern>
+          </objectSet>
+        </include>
+        <!-- Specific things to gather from HKLM -->
+        <include>
+          <objectSet>
+            <pattern type="Registry">HKLM\Software\Microsoft\IdentityCRL [ServiceEnvironment]</pattern>
+            <pattern type="Registry">HKLM\Software\Wow6432Node\Microsoft\IdentityCRL [ServiceEnvironment]</pattern>
+          </objectSet>
+        </include>
+      </rules>
+      <rules context="user">
+        <!-- These user-context rules apply only in Upgrade and Data-only-upgrade -->
+        <detects>
+          <detect>
+            <condition>MigXmlHelper.IsMigrationScope("Upgrade")</condition>
+            <condition>MigXmlHelper.IsMigrationScope("Data")</condition>
+          </detect>
+        </detects>
+        <include>
+          <objectSet>
+            <pattern type="Registry">HKCU\Software\Microsoft\AuthCookies\Live\Default\* [*]</pattern>
+          </objectSet>
+        </include>
+      </rules>
+      <rules context="system">
+        <!-- These system-context rules apply in all cases. The MigWiz case is needed for upgrades from Vista which use WET behind
+             the scenes. In actual PC-to-PC WET this move should not have any impact since the SIDs on the target machine will
+             be different, and any conflicts (e.g. PhysicalDeviceId) will be handled with DestinationPriority. -->
+        <include>
+          <objectSet>
+            <pattern type="Registry">HKU\.DEFAULT\Software\Microsoft\IdentityCRL\DeviceIdentities\* [*]</pattern>
+          </objectSet>
+        </include>
+        <merge script="MigXmlHelper.DestinationPriority()">
+          <objectSet>
+            <pattern type="Registry">HKU\.DEFAULT\Software\Microsoft\IdentityCRL\DeviceIdentities\* [*]</pattern>
+          </objectSet>
+        </merge>
+      </rules>
+    </migXml>
+  </migration>
+</assembly>
