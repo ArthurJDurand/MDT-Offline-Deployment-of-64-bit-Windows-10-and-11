@@ -64,7 +64,7 @@ function InstallAppxPackage {
     if (-not (Get-AppxPackage | Where-Object { $_.Name -match $PackageName })) {
         $Package = Get-ChildItem -File "$PackageFolderPath\$PackageName*.*" | Select-Object -ExpandProperty FullName
         $Log = Join-Path -Path C:\Recovery\OEM\Apps\Logs -ChildPath $LogFileName
-        $DependencyFolderPath = "$PackageFolderPath\Dependencies"
+        $DependencyFolderPath = "C:\Recovery\OEM\Apps\Dependencies"
         $Dependencies = Get-ChildItem -Path $DependencyFolderPath -Filter "*.appx" | Select-Object -ExpandProperty FullName
         Add-AppxProvisionedPackage -Online -PackagePath $Package -DependencyPackagePath $Dependencies -SkipLicense -LogPath $Log
     }
@@ -290,7 +290,7 @@ $Extensions = @(
     @{Name="Microsoft.MPEG2VideoExtension"; Log="MPEG2VideoExtension_UWP.log"},
     @{Name="Microsoft.RawImageExtension"; Log="RawImageExtension_UWP.log"},
     @{Name="Microsoft.VP9VideoExtensions"; Log="VP9VideoExtensions_UWP.log"},
-    @{Name="Microsoft.WebMediaExtensions"; Log="WebMediaExtensions.log"},
+    @{Name="Microsoft.WebMediaExtensions"; Log="WebMediaExtensions_UWP.log"},
     @{Name="Microsoft.WebpImageExtension"; Log="WebpImageExtension_UWP.log"}
 )
 
